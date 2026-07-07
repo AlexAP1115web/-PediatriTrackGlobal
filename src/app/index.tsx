@@ -71,7 +71,7 @@ export default function Index() {
           { alignItems: "center", justifyContent: "center" },
         ]}
       >
-        <ActivityIndicator size="large" color="#1976D2" />
+        <ActivityIndicator size="large" color="#00843D" />
         <Text style={[globalStyles.subtitle, { marginTop: 12 }]}>
           Verificando sesión...
         </Text>

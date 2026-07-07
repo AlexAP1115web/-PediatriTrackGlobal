@@ -1,30 +1,37 @@
 import { StyleSheet } from "react-native";
 
+// Paleta "MediCore" — reskin verde médico profesional (UTP Edition 2026).
 export const colors = {
-  background: "#EEF3FF",
+  background: "#F7FAF8",
   white: "#FFFFFF",
 
-  primary: "#1976D2",
-  primaryDark: "#0D47A1",
-  primaryLight: "#E3F2FD",
+  primary: "#00843D",
+  primaryDark: "#006C32",
+  primaryLight: "#DFF5E8",
 
-  green: "#2E7D32",
-  greenLight: "#C8E6C9",
+  accent: "#00A651",
 
-  red: "#C62828",
-  redLight: "#FFEBEE",
+  green: "#059669",
+  greenLight: "#DCFCE7",
 
-  yellow: "#FFF9C4",
+  red: "#DC2626",
+  redLight: "#FEE2E2",
 
-  text: "#263238",
-  muted: "#607D8B",
-  border: "#CFD8DC",
+  yellow: "#FEF3C7",
+  warning: "#B45309",
+
+  text: "#0F172A",
+  muted: "#64748B",
+  border: "#DBE5DC",
+
+  soft: "#F7FAF8",
+  soft2: "#EEF4F0",
 };
 
 // Sombra suave reutilizable, estilo Google Fit / Apple Health,
 // para darle profundidad a las tarjetas sin StyleSheets nuevos por pantalla.
 const sombraSuave = {
-  shadowColor: "#0D47A1",
+  shadowColor: "#006C32",
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.08,
   shadowRadius: 12,
@@ -32,7 +39,7 @@ const sombraSuave = {
 };
 
 const sombraTenue = {
-  shadowColor: "#0D47A1",
+  shadowColor: "#006C32",
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.06,
   shadowRadius: 6,
@@ -85,7 +92,7 @@ export const globalStyles = StyleSheet.create({
 
   label: {
     fontWeight: "800",
-    color: "#455A64",
+    color: colors.text,
     marginBottom: 8,
     marginTop: 4,
   },
@@ -97,7 +104,7 @@ export const globalStyles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     marginBottom: 12,
-    backgroundColor: "#FAFAFA",
+    backgroundColor: colors.soft,
     color: colors.text,
     fontWeight: "600",
   },
@@ -162,7 +169,7 @@ export const globalStyles = StyleSheet.create({
   profileCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#BBDEFB",
+    backgroundColor: "#BFE8D2",
     padding: 16,
     borderRadius: 24,
     marginTop: 8,
@@ -196,7 +203,7 @@ export const globalStyles = StyleSheet.create({
   },
 
   babyAge: {
-    color: "#455A64",
+    color: colors.muted,
     fontWeight: "800",
     marginTop: 2,
   },
@@ -281,13 +288,13 @@ export const globalStyles = StyleSheet.create({
 
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#80CBC4",
+    backgroundColor: colors.primaryLight,
     paddingVertical: 12,
     paddingHorizontal: 10,
   },
 
   tableHeaderText: {
-    color: "#004D40",
+    color: colors.primaryDark,
     fontWeight: "900",
     fontSize: 13,
   },
@@ -298,7 +305,7 @@ export const globalStyles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#ECEFF1",
+    borderBottomColor: colors.soft2,
   },
 
   colLarge: {
@@ -321,13 +328,13 @@ export const globalStyles = StyleSheet.create({
   },
 
   vaccineDose: {
-    color: "#78909C",
+    color: colors.muted,
     fontSize: 11,
     marginTop: 2,
   },
 
   vaccineStage: {
-    color: "#455A64",
+    color: colors.muted,
     fontWeight: "700",
     fontSize: 12,
   },
@@ -525,7 +532,7 @@ export const globalStyles = StyleSheet.create({
 
   documentDescription: {
     marginTop: 12,
-    color: "#455A64",
+    color: colors.muted,
     lineHeight: 19,
     fontWeight: "600",
   },
@@ -585,13 +592,13 @@ export const globalStyles = StyleSheet.create({
   },
 
   helpTitle: {
-    color: "#795548",
+    color: colors.warning,
     fontWeight: "900",
     fontSize: 16,
   },
 
   helpText: {
-    color: "#6D4C41",
+    color: "#92400E",
     marginTop: 6,
     lineHeight: 19,
     fontWeight: "600",
@@ -607,13 +614,13 @@ export const globalStyles = StyleSheet.create({
   },
 
   alertTitle: {
-    color: "#795548",
+    color: colors.warning,
     fontWeight: "900",
     fontSize: 16,
   },
 
   alertText: {
-    color: "#6D4C41",
+    color: "#92400E",
     marginTop: 6,
     lineHeight: 19,
     fontWeight: "600",
@@ -661,7 +668,7 @@ export const globalStyles = StyleSheet.create({
   },
 
   noticeText: {
-    color: "#795548",
+    color: colors.warning,
     fontWeight: "800",
     textAlign: "center",
   },
@@ -707,13 +714,13 @@ export const globalStyles = StyleSheet.create({
   },
 
   vitaminInfo: {
-    color: "#455A64",
+    color: colors.muted,
     marginTop: 4,
     fontWeight: "600",
   },
 
   vitaminDetails: {
-    backgroundColor: "#F7F9FC",
+    backgroundColor: colors.soft,
     padding: 12,
     borderRadius: 14,
     marginTop: 14,
@@ -781,15 +788,15 @@ export const globalStyles = StyleSheet.create({
   countryButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#BBDEFB",
+    borderColor: "#BFE8D2",
     borderRadius: 14,
     padding: 12,
-    backgroundColor: "#F5FAFF",
+    backgroundColor: "#F3FBF6",
     marginRight: 8,
   },
 
   countryActive: {
-    backgroundColor: "#BBDEFB",
+    backgroundColor: "#BFE8D2",
     borderColor: colors.primary,
   },
 
@@ -810,7 +817,7 @@ export const globalStyles = StyleSheet.create({
 
   footer: {
     textAlign: "center",
-    color: "#78909C",
+    color: colors.muted,
     marginTop: 18,
     fontSize: 12,
   },
@@ -867,7 +874,7 @@ export const globalStyles = StyleSheet.create({
   },
 
   historyText: {
-    color: "#455A64",
+    color: colors.muted,
     marginBottom: 4,
     fontWeight: "600",
   },
@@ -890,7 +897,7 @@ export const globalStyles = StyleSheet.create({
 
   foodDescription: {
     marginTop: 8,
-    color: "#455A64",
+    color: colors.muted,
     lineHeight: 20,
   },
 
@@ -904,7 +911,7 @@ export const globalStyles = StyleSheet.create({
 
   scheduleText: {
     fontSize: 15,
-    color: "#455A64",
+    color: colors.muted,
     marginBottom: 8,
     fontWeight: "600",
   },
@@ -925,7 +932,7 @@ export const globalStyles = StyleSheet.create({
 
   foodStatusText: {
     marginTop: 8,
-    color: "#2E7D32",
+    color: colors.green,
     lineHeight: 20,
     fontWeight: "600",
   },
@@ -955,7 +962,7 @@ export const globalStyles = StyleSheet.create({
 
   calendarDescription: {
     marginTop: 8,
-    color: "#455A64",
+    color: colors.muted,
     lineHeight: 20,
     fontWeight: "600",
   },
@@ -978,7 +985,7 @@ export const globalStyles = StyleSheet.create({
   },
 
   timelineText: {
-    color: "#455A64",
+    color: colors.muted,
     fontWeight: "600",
   },
 
@@ -990,10 +997,10 @@ export const globalStyles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: colors.white,
     borderTopWidth: 1,
-    borderTopColor: "#E0E0E0",
+    borderTopColor: colors.border,
     paddingVertical: 12,
     paddingBottom: 14,
-    shadowColor: "#0D47A1",
+    shadowColor: "#006C32",
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -1094,7 +1101,7 @@ export const globalStyles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(13, 71, 161, 0.35)",
+    backgroundColor: "rgba(0, 108, 50, 0.35)",
     justifyContent: "flex-end",
   },
 
