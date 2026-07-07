@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// Reglas de seguridad de Firestore para PediatriTrack Global.
+// Cada documento guarda el campo "uid" del usuario que lo creó.
+// Solo el dueño autenticado puede leer, actualizar o eliminar su propio
+// documento, y solo puede crear documentos marcados con su propio uid.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /bebes/{docId} {
+      allow read, update, delete: if request.auth != null
+        && request.auth.uid == resource.data.uid;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.uid;
+    }
+
+    match /vitaminas/{docId} {
+      allow read, update, delete: if request.auth != null
+        && request.auth.uid == resource.data.uid;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.uid;
+    }
+
+    match /documentos/{docId} {
+      allow read, update, delete: if request.auth != null
+        && request.auth.uid == resource.data.uid;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.uid;
+    }
+
+    match /alimentacion/{docId} {
+      allow read, update, delete: if request.auth != null
+        && request.auth.uid == resource.data.uid;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.uid;
+    }
+
+    match /vacunas_aplicadas/{docId} {
+      allow read, update, delete: if request.auth != null
+        && request.auth.uid == resource.data.uid;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.uid;
+    }
+
+    // Cualquier otra colección queda bloqueada por defecto.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

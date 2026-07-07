@@ -1,0 +1,20 @@
+rules_version = '2';
+
+// Reglas de seguridad de Firebase Storage para PediatriTrack Global.
+// Los PDF se guardan en documentos/{uid}/{archivo}. Solo el usuario
+// autenticado dueño de ese uid puede leer, subir o eliminar sus propios
+// archivos.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    match /documentos/{uid}/{archivo} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Cualquier otra ruta queda bloqueada por defecto.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

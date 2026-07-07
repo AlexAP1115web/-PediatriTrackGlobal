@@ -1,0 +1,563 @@
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import BottomNav from "../components/BottomNav";
+import {
+  actualizarVitaminaFirebase,
+  eliminarVitaminaFirebase,
+  guardarVitaminaFirebase,
+  obtenerVitaminasFirebase,
+  registrarTomaVitaminaFirebase,
+  VitaminaFirebase,
+} from "../firebase/firebaseService";
+import { globalStyles } from "../styles/globalStyles";
+
+type Props = {
+  onGo: (screen: string) => void;
+};
+
+type EstadoRecordatorio =
+  | "Pendiente hoy"
+  | "Atrasada"
+  | "Al día"
+  | "Según indicación médica";
+
+// ==========================
+// Utilidades de fecha y recordatorios
+// ==========================
+
+function formatearFechaHoy(): string {
+  const hoy = new Date();
+  const dia = String(hoy.getDate()).padStart(2, "0");
+  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+  const anio = hoy.getFullYear();
+  return `${dia}/${mes}/${anio}`;
+}
+
+function parsearFecha(fechaTexto: string): Date | null {
+  const coincidencia = fechaTexto.match(
+    /(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})/
+  );
+
+  if (!coincidencia) return null;
+
+  const dia = parseInt(coincidencia[1], 10);
+  const mes = parseInt(coincidencia[2], 10);
+  let anio = parseInt(coincidencia[3], 10);
+  if (anio < 100) anio += 2000;
+
+  const fecha = new Date(anio, mes - 1, dia);
+  return Number.isNaN(fecha.getTime()) ? null : fecha;
+}
+
+function sumarDias(fecha: Date, dias: number): Date {
+  const resultado = new Date(fecha);
+  resultado.setDate(resultado.getDate() + dias);
+  return resultado;
+}
+
+function obtenerDiasPorFrecuencia(frecuencia: string): number | null {
+  if (frecuencia === "Diario") return 1;
+  if (frecuencia === "Cada 2 días") return 2;
+  if (frecuencia === "Semanal") return 7;
+  return null;
+}
+
+function obtenerEstadoRecordatorio(
+  vitamina: VitaminaFirebase
+): EstadoRecordatorio {
+  const dias = obtenerDiasPorFrecuencia(vitamina.frecuencia);
+  if (dias === null) return "Según indicación médica";
+
+  if (!vitamina.ultimaToma) return "Pendiente hoy";
+
+  const ultima = parsearFecha(vitamina.ultimaToma);
+  if (!ultima) return "Pendiente hoy";
+
+  const proxima = sumarDias(ultima, dias);
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  proxima.setHours(0, 0, 0, 0);
+
+  if (proxima.getTime() < hoy.getTime()) return "Atrasada";
+  if (proxima.getTime() === hoy.getTime()) return "Pendiente hoy";
+  return "Al día";
+}
+
+function obtenerEstiloEstado(estado: EstadoRecordatorio) {
+  if (estado === "Atrasada") return globalStyles.statusPending;
+  if (estado === "Pendiente hoy") return globalStyles.statusNext;
+  return globalStyles.statusApplied;
+}
+
+export default function VitaminsScreen({ onGo }: Props) {
+  const [nombre, setNombre] = useState("");
+  const [dosis, setDosis] = useState("");
+  const [frecuencia, setFrecuencia] = useState("Diario");
+  const [duracion, setDuracion] = useState("");
+  const [indicaciones, setIndicaciones] = useState("");
+
+  const [vitaminas, setVitaminas] = useState<VitaminaFirebase[]>([]);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [procesandoId, setProcesandoId] = useState<string | null>(null);
+
+  useEffect(() => {
+    cargarVitaminas();
+  }, []);
+
+  const cargarVitaminas = async () => {
+    try {
+      const datos = await obtenerVitaminasFirebase();
+      setVitaminas(datos);
+    } catch (error) {
+      console.log("Error al cargar vitaminas:", error);
+    }
+  };
+
+  const limpiarFormulario = () => {
+    setNombre("");
+    setDosis("");
+    setFrecuencia("Diario");
+    setDuracion("");
+    setIndicaciones("");
+    setEditandoId(null);
+  };
+
+  const iniciarEdicion = (vitamina: VitaminaFirebase) => {
+    if (!vitamina.id) return;
+
+    setEditandoId(vitamina.id);
+    setNombre(vitamina.nombre);
+    setDosis(vitamina.dosis);
+    setFrecuencia(vitamina.frecuencia);
+    setDuracion(vitamina.duracion);
+    setIndicaciones(vitamina.indicaciones || "");
+  };
+
+  const guardarVitamina = async () => {
+    if (!nombre.trim() || !dosis.trim()) {
+      Alert.alert(
+        "Datos incompletos",
+        "Escribe el nombre de la vitamina y la dosis."
+      );
+      return;
+    }
+
+    setGuardando(true);
+
+    try {
+      if (editandoId) {
+        await actualizarVitaminaFirebase(editandoId, {
+          nombre: nombre.trim(),
+          dosis: dosis.trim(),
+          frecuencia,
+          duracion: duracion.trim() || "Sin duración definida",
+          indicaciones:
+            indicaciones.trim() || "Sin indicaciones adicionales",
+        });
+
+        Alert.alert(
+          "Vitamina actualizada",
+          "El plan de vitaminación fue actualizado correctamente."
+        );
+      } else {
+        await guardarVitaminaFirebase({
+          nombre: nombre.trim(),
+          dosis: dosis.trim(),
+          frecuencia,
+          duracion: duracion.trim() || "Sin duración definida",
+          indicaciones:
+            indicaciones.trim() || "Sin indicaciones adicionales",
+        });
+
+        Alert.alert(
+          "Vitamina guardada",
+          "El plan de vitaminación fue registrado correctamente en Firebase."
+        );
+      }
+
+      await cargarVitaminas();
+      limpiarFormulario();
+    } catch (error) {
+      console.log("Error al guardar vitamina:", error);
+
+      Alert.alert(
+        "Error",
+        "No se pudo guardar el plan de vitaminación."
+      );
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const registrarToma = async (vitamina: VitaminaFirebase) => {
+    if (!vitamina.id) return;
+
+    setProcesandoId(vitamina.id);
+
+    try {
+      await registrarTomaVitaminaFirebase(vitamina.id, formatearFechaHoy());
+      await cargarVitaminas();
+    } catch (error) {
+      console.log("Error al registrar toma:", error);
+      Alert.alert("Error", "No se pudo registrar la toma de hoy.");
+    } finally {
+      setProcesandoId(null);
+    }
+  };
+
+  const confirmarEliminar = (vitamina: VitaminaFirebase) => {
+    Alert.alert(
+      "Eliminar vitamina",
+      `¿Seguro que quieres eliminar "${vitamina.nombre}"?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: () => eliminarVitamina(vitamina),
+        },
+      ]
+    );
+  };
+
+  const eliminarVitamina = async (vitamina: VitaminaFirebase) => {
+    if (!vitamina.id) return;
+
+    setProcesandoId(vitamina.id);
+
+    try {
+      await eliminarVitaminaFirebase(vitamina.id);
+
+      if (editandoId === vitamina.id) {
+        limpiarFormulario();
+      }
+
+      await cargarVitaminas();
+    } catch (error) {
+      console.log("Error al eliminar vitamina:", error);
+      Alert.alert("Error", "No se pudo eliminar la vitamina.");
+    } finally {
+      setProcesandoId(null);
+    }
+  };
+
+  const pendientesHoy = vitaminas.filter((item) => {
+    const estado = obtenerEstadoRecordatorio(item);
+    return estado === "Pendiente hoy" || estado === "Atrasada";
+  }).length;
+
+  const tomadasHoy = vitaminas.filter(
+    (item) => item.ultimaToma === formatearFechaHoy()
+  ).length;
+
+  return (
+    <View style={globalStyles.screen}>
+      <ScrollView
+        style={globalStyles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={globalStyles.headerCard}>
+          <Text style={globalStyles.title}>💊 Vitaminación</Text>
+
+          <Text style={globalStyles.subtitle}>
+            Panel para registrar vitaminas, dosis, frecuencia y duración,
+            con recordatorios de tomas pendientes y completadas.
+          </Text>
+        </View>
+
+        <View style={globalStyles.summaryRow}>
+          <View style={globalStyles.summaryCard}>
+            <Text style={globalStyles.summaryNumber}>{vitaminas.length}</Text>
+            <Text style={globalStyles.summaryText}>Registradas</Text>
+          </View>
+
+          <View style={globalStyles.summaryCard}>
+            <Text style={globalStyles.summaryNumber}>{tomadasHoy}</Text>
+            <Text style={globalStyles.summaryText}>Tomadas hoy</Text>
+          </View>
+
+          <View style={globalStyles.summaryCard}>
+            <Text style={globalStyles.summaryNumber}>{pendientesHoy}</Text>
+            <Text style={globalStyles.summaryText}>Pendientes</Text>
+          </View>
+        </View>
+
+        <View style={globalStyles.formCard}>
+          <Text style={globalStyles.sectionTitle}>
+            {editandoId
+              ? "Editar suplemento o vitamina"
+              : "Registrar suplemento o vitamina"}
+          </Text>
+
+          <Text style={globalStyles.label}>Nombre</Text>
+          <TextInput
+            placeholder="Ej. Vitamina D, Hierro, Multivitamínico"
+            placeholderTextColor="#90A4AE"
+            value={nombre}
+            onChangeText={setNombre}
+            style={globalStyles.input}
+          />
+
+          <Text style={globalStyles.label}>Dosis</Text>
+          <TextInput
+            placeholder="Ej. 2 gotas, 1 ml, 1 tableta"
+            placeholderTextColor="#90A4AE"
+            value={dosis}
+            onChangeText={setDosis}
+            style={globalStyles.input}
+          />
+
+          <Text style={globalStyles.label}>Frecuencia</Text>
+
+          <View style={globalStyles.optionRow}>
+            <TouchableOpacity
+              style={[
+                globalStyles.optionButton,
+                frecuencia === "Diario" && globalStyles.optionActive,
+              ]}
+              onPress={() => setFrecuencia("Diario")}
+            >
+              <Text
+                style={[
+                  globalStyles.optionText,
+                  frecuencia === "Diario" && globalStyles.optionTextActive,
+                ]}
+              >
+                Diario
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                globalStyles.optionButton,
+                frecuencia === "Cada 2 días" && globalStyles.optionActive,
+              ]}
+              onPress={() => setFrecuencia("Cada 2 días")}
+            >
+              <Text
+                style={[
+                  globalStyles.optionText,
+                  frecuencia === "Cada 2 días" &&
+                    globalStyles.optionTextActive,
+                ]}
+              >
+                Cada 2 días
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={globalStyles.optionRow}>
+            <TouchableOpacity
+              style={[
+                globalStyles.optionButton,
+                frecuencia === "Semanal" && globalStyles.optionActive,
+              ]}
+              onPress={() => setFrecuencia("Semanal")}
+            >
+              <Text
+                style={[
+                  globalStyles.optionText,
+                  frecuencia === "Semanal" && globalStyles.optionTextActive,
+                ]}
+              >
+                Semanal
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                globalStyles.optionButton,
+                frecuencia === "Indicación médica" &&
+                  globalStyles.optionActive,
+              ]}
+              onPress={() => setFrecuencia("Indicación médica")}
+            >
+              <Text
+                style={[
+                  globalStyles.optionText,
+                  frecuencia === "Indicación médica" &&
+                    globalStyles.optionTextActive,
+                ]}
+              >
+                Médica
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={globalStyles.label}>Duración</Text>
+          <TextInput
+            placeholder="Ej. 30 días, 3 meses, continuo"
+            placeholderTextColor="#90A4AE"
+            value={duracion}
+            onChangeText={setDuracion}
+            style={globalStyles.input}
+          />
+
+          <Text style={globalStyles.label}>Indicaciones adicionales</Text>
+          <TextInput
+            placeholder="Ej. Administrar después del desayuno"
+            placeholderTextColor="#90A4AE"
+            value={indicaciones}
+            onChangeText={setIndicaciones}
+            style={[globalStyles.input, globalStyles.textArea]}
+            multiline
+          />
+
+          <View style={globalStyles.noticeCard}>
+            <Text style={globalStyles.noticeText}>
+              Este panel registra información de apoyo. La dosis debe seguir la
+              indicación médica correspondiente.
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={globalStyles.buttonGreen}
+            onPress={guardarVitamina}
+            disabled={guardando}
+          >
+            <Text style={globalStyles.buttonText}>
+              {guardando
+                ? "Guardando..."
+                : editandoId
+                ? "Actualizar vitaminación"
+                : "Guardar vitaminación"}
+            </Text>
+          </TouchableOpacity>
+
+          {editandoId && (
+            <TouchableOpacity
+              style={[globalStyles.unmarkButton, { marginTop: 10 }]}
+              onPress={limpiarFormulario}
+            >
+              <Text style={globalStyles.unmarkButtonText}>
+                Cancelar edición
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <Text style={globalStyles.sectionTitle}>
+          Vitaminas registradas
+        </Text>
+
+        {vitaminas.length === 0 && (
+          <View style={globalStyles.helpCard}>
+            <Text style={globalStyles.helpTitle}>
+              Sin registros todavía
+            </Text>
+
+            <Text style={globalStyles.helpText}>
+              Agrega una vitamina o suplemento para visualizarlo en este panel.
+            </Text>
+          </View>
+        )}
+
+        {vitaminas.map((item) => {
+          const estadoRecordatorio = obtenerEstadoRecordatorio(item);
+          const enProceso = procesandoId === item.id;
+
+          return (
+            <View key={item.id} style={globalStyles.vitaminCard}>
+              <View style={globalStyles.vitaminHeader}>
+                <View style={globalStyles.vitaminIconBox}>
+                  <Text style={globalStyles.vitaminIcon}>💊</Text>
+                </View>
+
+                <View style={globalStyles.vitaminInfoBox}>
+                  <Text style={globalStyles.vitaminName}>
+                    {item.nombre}
+                  </Text>
+
+                  <Text style={globalStyles.vitaminInfo}>
+                    Dosis: {item.dosis}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    globalStyles.statusBadge,
+                    obtenerEstiloEstado(estadoRecordatorio),
+                  ]}
+                >
+                  <Text style={globalStyles.statusText}>
+                    {estadoRecordatorio}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={globalStyles.vitaminDetails}>
+                <Text style={globalStyles.vitaminInfo}>
+                  Frecuencia: {item.frecuencia}
+                </Text>
+
+                <Text style={globalStyles.vitaminInfo}>
+                  Duración: {item.duracion}
+                </Text>
+
+                <Text style={globalStyles.vitaminInfo}>
+                  Última toma: {item.ultimaToma || "Sin registrar"}
+                </Text>
+              </View>
+
+              <View style={globalStyles.documentActions}>
+                <TouchableOpacity
+                  style={globalStyles.applyButton}
+                  disabled={enProceso}
+                  onPress={() => registrarToma(item)}
+                >
+                  <Text style={globalStyles.applyButtonText}>
+                    {enProceso ? "Guardando..." : "Registrar toma de hoy"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={globalStyles.documentActions}>
+                <TouchableOpacity
+                  style={globalStyles.viewButton}
+                  onPress={() => iniciarEdicion(item)}
+                >
+                  <Text style={globalStyles.viewButtonText}>✏️ Editar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={globalStyles.deleteButton}
+                  disabled={enProceso}
+                  onPress={() => confirmarEliminar(item)}
+                >
+                  <Text style={globalStyles.deleteButtonText}>
+                    {enProceso ? "Eliminando..." : "🗑 Eliminar"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          );
+        })}
+
+        <View style={globalStyles.helpCard}>
+          <Text style={globalStyles.helpTitle}>
+            📌 Nota importante
+          </Text>
+
+          <Text style={globalStyles.helpText}>
+            PediatriTrack Global organiza el seguimiento de vitaminas, pero no
+            sustituye indicaciones médicas. Ante dudas sobre dosis o duración,
+            se debe consultar al profesional de salud.
+          </Text>
+        </View>
+
+        <View style={globalStyles.bottomSpace} />
+      </ScrollView>
+
+      <BottomNav onGo={onGo} active="vitaminas" />
+    </View>
+  );
+}
