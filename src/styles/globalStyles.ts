@@ -384,6 +384,20 @@ export const globalStyles = StyleSheet.create({
     marginRight: 12,
   },
 
+  // Variantes de color para diferenciar módulos de un vistazo (mismo tamaño,
+  // solo cambia el tinte de fondo — reutiliza los colores ya definidos).
+  moduleIconBoxWarning: {
+    backgroundColor: colors.yellow,
+  },
+
+  moduleIconBoxGreen: {
+    backgroundColor: colors.greenLight,
+  },
+
+  moduleIconBoxMuted: {
+    backgroundColor: colors.soft2,
+  },
+
   moduleIcon: {
     fontSize: 26,
   },
@@ -754,6 +768,13 @@ export const globalStyles = StyleSheet.create({
     borderRadius: 22,
     alignSelf: "center",
     marginBottom: 10,
+  },
+
+  passwordHint: {
+    color: colors.muted,
+    fontSize: 12,
+    marginTop: -6,
+    marginBottom: 12,
   },
 
   privacyLinkText: {

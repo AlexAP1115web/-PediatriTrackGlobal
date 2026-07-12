@@ -509,6 +509,14 @@ export default function VaccinationScreen({ onGo }: Props) {
     },
   ];
 
+  const obtenerEstiloIconoModulo = (ruta: string) => {
+    if (ruta === "vitaminas") return globalStyles.moduleIconBoxWarning;
+    if (ruta === "alimentacion") return globalStyles.moduleIconBoxGreen;
+    if (ruta === "info" || ruta === "privacidad")
+      return globalStyles.moduleIconBoxMuted;
+    return globalStyles.moduleIconBox;
+  };
+
   const getStatusStyle = (estado: EstadoVacuna) => {
     if (estado === "Aplicada") return globalStyles.statusApplied;
     if (estado === "Próxima") return globalStyles.statusNext;
@@ -901,7 +909,12 @@ export default function VaccinationScreen({ onGo }: Props) {
             style={globalStyles.moduleCard}
             onPress={() => onGo(modulo.ruta)}
           >
-            <View style={globalStyles.moduleIconBox}>
+            <View
+              style={[
+                globalStyles.moduleIconBox,
+                obtenerEstiloIconoModulo(modulo.ruta),
+              ]}
+            >
               <Text style={globalStyles.moduleIcon}>{modulo.icono}</Text>
             </View>
 

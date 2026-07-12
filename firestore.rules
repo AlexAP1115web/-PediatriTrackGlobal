@@ -8,37 +8,52 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Un update solo se permite si YA eras el dueño y el documento SIGUE
+    // perteneciéndote después del cambio (el campo "uid" no se puede
+    // reasignar a otra cuenta). Esto evita que alguien "regale" o reasigne
+    // sus propios documentos al uid de otra persona.
+    function esActualizacionSinCambioDeDueno() {
+      return request.auth != null
+        && request.auth.uid == resource.data.uid
+        && request.resource.data.uid == resource.data.uid;
+    }
+
     match /bebes/{docId} {
-      allow read, update, delete: if request.auth != null
+      allow read, delete: if request.auth != null
         && request.auth.uid == resource.data.uid;
+      allow update: if esActualizacionSinCambioDeDueno();
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.uid;
     }
 
     match /vitaminas/{docId} {
-      allow read, update, delete: if request.auth != null
+      allow read, delete: if request.auth != null
         && request.auth.uid == resource.data.uid;
+      allow update: if esActualizacionSinCambioDeDueno();
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.uid;
     }
 
     match /documentos/{docId} {
-      allow read, update, delete: if request.auth != null
+      allow read, delete: if request.auth != null
         && request.auth.uid == resource.data.uid;
+      allow update: if esActualizacionSinCambioDeDueno();
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.uid;
     }
 
     match /alimentacion/{docId} {
-      allow read, update, delete: if request.auth != null
+      allow read, delete: if request.auth != null
         && request.auth.uid == resource.data.uid;
+      allow update: if esActualizacionSinCambioDeDueno();
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.uid;
     }
 
     match /vacunas_aplicadas/{docId} {
-      allow read, update, delete: if request.auth != null
+      allow read, delete: if request.auth != null
         && request.auth.uid == resource.data.uid;
+      allow update: if esActualizacionSinCambioDeDueno();
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.uid;
     }

@@ -9,7 +9,17 @@ service firebase.storage {
   match /b/{bucket}/o {
 
     match /documentos/{uid}/{archivo} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+
+      // La app solo permite subir PDF (expo-document-picker con
+      // type: "application/pdf"), así que las reglas exigen lo mismo del
+      // lado del servidor: evita que alguien use el firebaseConfig público
+      // para subir archivos arbitrarios o excesivamente grandes saltándose
+      // la app.
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.contentType == 'application/pdf'
+        && request.resource.size < 15 * 1024 * 1024;
     }
 
     // Cualquier otra ruta queda bloqueada por defecto.
