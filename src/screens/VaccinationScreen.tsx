@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Alert,
-  Modal,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -9,6 +7,7 @@ import {
 } from "react-native";
 
 import BottomNav from "../components/BottomNav";
+import { auth } from "../firebase/firebaseConfig";
 import {
   BebeFirebase,
   cerrarSesionFirebase,
@@ -24,6 +23,7 @@ import {
   VacunaAplicadaFirebase,
 } from "../firebase/firebaseService";
 import { globalStyles } from "../styles/globalStyles";
+import { Alert } from "../utils/alerta";
 
 type Props = {
   onGo: (screen: string) => void;
@@ -52,7 +52,7 @@ type Modulo = {
 type EstadoVacuna = "Aplicada" | "Próxima" | "Pendiente";
 
 // ==========================
-// Utilidades de fecha y edad
+// funciones de apoyo para fechas y edad del bebé
 // ==========================
 
 function calcularEdadBebeEnMeses(fechaTexto: string): number | null {
@@ -115,6 +115,25 @@ function formatearFechaHoy(): string {
 
 function claveVacuna(v: { pais: string; nombre: string; dosis: string }) {
   return `${v.pais}__${v.nombre}__${v.dosis}`;
+}
+
+// esto es para el saludo personalizado, cambia según la hora del día
+function obtenerSaludoPorHora(): string {
+  const hora = new Date().getHours();
+  if (hora < 12) return "Buenos días";
+  if (hora < 19) return "Buenas tardes";
+  return "Buenas noches";
+}
+
+// el nombre que muestro en el saludo: uso el del tutor si lo registró,
+// si no, agarro lo que viene antes del "@" de su correo como respaldo
+function obtenerNombreParaSaludo(
+  nombreTutor: string | undefined,
+  correo: string | null | undefined
+): string {
+  if (nombreTutor && nombreTutor.trim() !== "") return nombreTutor.trim();
+  if (correo) return correo.split("@")[0];
+  return "";
 }
 
 export default function VaccinationScreen({ onGo }: Props) {
@@ -187,9 +206,9 @@ export default function VaccinationScreen({ onGo }: Props) {
   };
 
   const abrirSelectorBebes = async () => {
-    // El menú de cuenta (con el botón de cerrar sesión) siempre debe
-    // poder abrirse, incluso si la lista de bebés falla al cargar
-    // (por ejemplo, por conexión o un índice de Firestore pendiente).
+    // quiero que el menú de cuenta (con el botón de cerrar sesión) se
+    // pueda abrir siempre, aunque falle la carga de bebés (por conexión
+    // o porque le falta un índice a Firestore, por ejemplo)
     setSelectorVisible(true);
 
     try {
@@ -197,8 +216,8 @@ export default function VaccinationScreen({ onGo }: Props) {
       setBebes(datos.length > 0 ? datos : bebe ? [bebe] : []);
     } catch (error) {
       console.log("Error al obtener bebés registrados:", error);
-      // No bloquea el menú: si ya teníamos un bebé cargado, al menos
-      // se muestra ese, y las opciones de cuenta siguen disponibles.
+      // esto no bloquea el menú: si ya tenía un bebé cargado, muestro
+      // ese al menos, y las opciones de cuenta siguen disponibles
       setBebes(bebe ? [bebe] : []);
     }
   };
@@ -240,6 +259,10 @@ export default function VaccinationScreen({ onGo }: Props) {
             await cerrarSesionFirebase();
           } catch (error) {
             console.log("Error al cerrar sesión:", error);
+            Alert.alert(
+              "No se pudo cerrar sesión",
+              "Revisa tu conexión a internet e intenta de nuevo."
+            );
           }
         },
       },
@@ -257,6 +280,13 @@ export default function VaccinationScreen({ onGo }: Props) {
     () => calcularEdadBebeEnMeses(fechaNacimiento),
     [fechaNacimiento]
   );
+
+  const nombreParaSaludo = obtenerNombreParaSaludo(
+    bebe?.nombreTutor,
+    auth.currentUser?.email
+  );
+  const saludoPorHora = obtenerSaludoPorHora();
+  const parentescoBebe = bebe?.parentesco || "";
 
   const vacunasMexico: Vacuna[] = [
     {
@@ -507,11 +537,20 @@ export default function VaccinationScreen({ onGo }: Props) {
       descripcion: "Cómo protegemos los datos de tu bebé y tu cuenta.",
       ruta: "privacidad",
     },
+    {
+      id: 6,
+      icono: "🤖",
+      titulo: "Asistente Virtual",
+      descripcion:
+        "Chatea con nuestro asistente pediátrico sobre dudas generales.",
+      ruta: "chatbot",
+    },
   ];
 
   const obtenerEstiloIconoModulo = (ruta: string) => {
     if (ruta === "vitaminas") return globalStyles.moduleIconBoxWarning;
     if (ruta === "alimentacion") return globalStyles.moduleIconBoxGreen;
+    if (ruta === "chatbot") return globalStyles.moduleIconBoxGreen;
     if (ruta === "info" || ruta === "privacidad")
       return globalStyles.moduleIconBoxMuted;
     return globalStyles.moduleIconBox;
@@ -529,6 +568,17 @@ export default function VaccinationScreen({ onGo }: Props) {
         style={globalStyles.container}
         showsVerticalScrollIndicator={false}
       >
+        {nombreParaSaludo !== "" && (
+          <View style={globalStyles.greetingBanner}>
+            <Text style={globalStyles.greetingTitle}>
+              {saludoPorHora}, {nombreParaSaludo} 👋
+            </Text>
+            <Text style={globalStyles.greetingSubtitle}>
+              Este es el resumen de {nombreBebe} el día de hoy
+            </Text>
+          </View>
+        )}
+
         <View style={globalStyles.profileCard}>
           <View style={globalStyles.avatar}>
             <Text style={globalStyles.avatarText}>👶</Text>
@@ -554,11 +604,22 @@ export default function VaccinationScreen({ onGo }: Props) {
                   : "🇺🇸 Esquema de vacunación: Estados Unidos"}
               </Text>
             </View>
+
+            {parentescoBebe !== "" && (
+              <View style={globalStyles.relationshipBadge}>
+                <Text style={globalStyles.relationshipText}>
+                  👤 {parentescoBebe}
+                </Text>
+              </View>
+            )}
           </View>
 
           <TouchableOpacity
             style={globalStyles.configButton}
             onPress={abrirSelectorBebes}
+            accessibilityRole="button"
+            accessibilityLabel="Cambiar de bebé o cuenta"
+            accessibilityHint="Abre el selector de bebés registrados y la opción de cerrar sesión"
           >
             <Text style={globalStyles.configIcon}>⚙️</Text>
           </TouchableOpacity>
@@ -908,6 +969,9 @@ export default function VaccinationScreen({ onGo }: Props) {
             key={modulo.id}
             style={globalStyles.moduleCard}
             onPress={() => onGo(modulo.ruta)}
+            accessibilityRole="button"
+            accessibilityLabel={modulo.titulo}
+            accessibilityHint={modulo.descripcion}
           >
             <View
               style={[
@@ -945,12 +1009,9 @@ export default function VaccinationScreen({ onGo }: Props) {
 
       <BottomNav onGo={onGo} active="dashboard" />
 
-      <Modal
-        visible={selectorVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setSelectorVisible(false)}
-      >
+      {/* uso una View normal en vez de <Modal> de RN (ver nota en
+      globalStyles.modalOverlay del porqué) */}
+      {selectorVisible && (
         <View style={globalStyles.modalOverlay}>
           <View style={globalStyles.modalSheet}>
             <Text style={globalStyles.sectionTitle}>Cuenta y bebés</Text>
@@ -1016,7 +1077,7 @@ export default function VaccinationScreen({ onGo }: Props) {
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+      )}
     </View>
   );
 }

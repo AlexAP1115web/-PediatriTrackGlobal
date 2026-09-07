@@ -2,7 +2,7 @@ rules_version = '2';
 
 // Reglas de seguridad de Firebase Storage para PediatriTrack Global.
 // Los PDF se guardan en documentos/{uid}/{archivo}. Solo el usuario
-// autenticado dueño de ese uid puede leer, subir o eliminar sus propios
+// autenticado dueño de ese uid puede leer, subir o borrar sus propios
 // archivos.
 
 service firebase.storage {
@@ -11,18 +11,18 @@ service firebase.storage {
     match /documentos/{uid}/{archivo} {
       allow read, delete: if request.auth != null && request.auth.uid == uid;
 
-      // La app solo permite subir PDF (expo-document-picker con
-      // type: "application/pdf"), así que las reglas exigen lo mismo del
-      // lado del servidor: evita que alguien use el firebaseConfig público
-      // para subir archivos arbitrarios o excesivamente grandes saltándose
-      // la app.
+      // en la app solo dejo subir PDF (uso expo-document-picker con
+      // type: "application/pdf"), pero eso solo lo valida el celular, así
+      // que aquí lo repito del lado del servidor para que nadie agarre mi
+      // firebaseConfig público y suba archivos que no sean PDF o
+      // archivos gigantes saltándose la app.
       allow create: if request.auth != null
         && request.auth.uid == uid
         && request.resource.contentType == 'application/pdf'
         && request.resource.size < 15 * 1024 * 1024;
     }
 
-    // Cualquier otra ruta queda bloqueada por defecto.
+    // cualquier otra ruta que no sea esta queda bloqueada por default
     match /{allPaths=**} {
       allow read, write: if false;
     }

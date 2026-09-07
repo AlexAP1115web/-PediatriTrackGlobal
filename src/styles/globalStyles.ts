@@ -1,37 +1,44 @@
 import { StyleSheet } from "react-native";
 
-// Paleta "MediCore" — reskin verde médico profesional (UTP Edition 2026).
+// le cambié la paleta a algo más tierno para una app de bebés: azul cielo
+// como color principal + un toque de rosa de acento (antes era un verde
+// tipo hospital, ya no pegaba con la onda "bebé" que quería)
 export const colors = {
-  background: "#F7FAF8",
+  background: "#F5FAFF",
   white: "#FFFFFF",
 
-  primary: "#00843D",
-  primaryDark: "#006C32",
-  primaryLight: "#DFF5E8",
+  primary: "#0EA5E9",
+  primaryDark: "#0369A1",
+  primaryLight: "#E0F2FE",
 
-  accent: "#00A651",
+  accent: "#EC4899",
 
-  green: "#059669",
-  greenLight: "#DCFCE7",
+  // rosa que uso como segundo acento en algunas tarjetas/insignias
+  pink: "#EC4899",
+  pinkLight: "#FCE7F3",
 
-  red: "#DC2626",
-  redLight: "#FEE2E2",
+  green: "#14B8A6",
+  greenLight: "#CCFBF1",
+
+  red: "#F43F5E",
+  redLight: "#FFE4E6",
 
   yellow: "#FEF3C7",
   warning: "#B45309",
 
-  text: "#0F172A",
+  text: "#1E293B",
   muted: "#64748B",
-  border: "#DBE5DC",
+  border: "#DCE8F5",
 
-  soft: "#F7FAF8",
-  soft2: "#EEF4F0",
+  soft: "#F5FAFF",
+  soft2: "#E9F4FD",
 };
 
-// Sombra suave reutilizable, estilo Google Fit / Apple Health,
-// para darle profundidad a las tarjetas sin StyleSheets nuevos por pantalla.
+// esta sombra suave la reutilizo en varias tarjetas, quería un estilo tipo
+// Google Fit / Apple Health, así no tengo que crear un StyleSheet nuevo
+// por cada pantalla
 const sombraSuave = {
-  shadowColor: "#006C32",
+  shadowColor: "#0369A1",
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.08,
   shadowRadius: 12,
@@ -39,7 +46,7 @@ const sombraSuave = {
 };
 
 const sombraTenue = {
-  shadowColor: "#006C32",
+  shadowColor: "#0369A1",
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.06,
   shadowRadius: 6,
@@ -53,10 +60,16 @@ export const globalStyles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
-  // Contenedor principal
+  // este es el contenedor principal de casi todas las pantallas. Le puse
+  // width/maxWidth/alignSelf para que se vea bien tanto en celular (usa
+  // toda la pantalla, el maxWidth ni se nota) como en escritorio/web (ahí
+  // sí se centra con un ancho legible en vez de estirarse toda la ventana)
   container: {
     flex: 1,
     padding: 18,
+    width: "100%",
+    maxWidth: 640,
+    alignSelf: "center",
   },
 
   // Encabezado general
@@ -74,6 +87,7 @@ export const globalStyles = StyleSheet.create({
     fontSize: 29,
     fontWeight: "900",
     color: colors.primaryDark,
+    letterSpacing: -0.3,
   },
 
   subtitle: {
@@ -87,7 +101,10 @@ export const globalStyles = StyleSheet.create({
     fontSize: 21,
     fontWeight: "900",
     color: colors.text,
-    marginBottom: 12,
+    marginBottom: 14,
+    paddingBottom: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.border,
   },
 
   label: {
@@ -149,6 +166,8 @@ export const globalStyles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
     ...sombraTenue,
   },
 
@@ -235,6 +254,173 @@ export const globalStyles = StyleSheet.create({
 
   configIcon: {
     fontSize: 22,
+  },
+
+  // banner de bienvenida del dashboard (el saludo que cambia según la
+  // hora + el nombre del tutor/padre)
+  greetingBanner: {
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    padding: 18,
+    marginTop: 8,
+    marginBottom: 16,
+    ...sombraSuave,
+  },
+
+  greetingTitle: {
+    color: colors.white,
+    fontSize: 19,
+    fontWeight: "900",
+  },
+
+  greetingSubtitle: {
+    color: colors.primaryLight,
+    fontSize: 13,
+    fontWeight: "600",
+    marginTop: 4,
+  },
+
+  // insignia de parentesco del tutor/padre. Esta la dejé en rosa para
+  // darle su propio toque distinto al badge de país (que es azul)
+  relationshipBadge: {
+    backgroundColor: colors.pinkLight,
+    paddingVertical: 5,
+    paddingHorizontal: 9,
+    borderRadius: 12,
+    marginTop: 8,
+    alignSelf: "flex-start",
+  },
+
+  relationshipText: {
+    color: colors.pink,
+    fontWeight: "800",
+    fontSize: 12,
+  },
+
+  // este selector sí se puede ir a varias líneas (lo uso para parentesco,
+  // que tiene 5 opciones), a diferencia de countryContainer/countryButton
+  // que solo están pensados para 2 opciones nada más
+  chipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 18,
+  },
+
+  chipButton: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    marginRight: 8,
+    marginBottom: 8,
+    backgroundColor: colors.white,
+  },
+
+  chipButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+
+  chipText: {
+    color: colors.text,
+    fontWeight: "700",
+    fontSize: 13,
+  },
+
+  chipTextActive: {
+    color: colors.white,
+  },
+
+  // ==========================
+  // ASISTENTE VIRTUAL (chatbot)
+  // ==========================
+  chatMessagesArea: {
+    flex: 1,
+  },
+
+  chatBubbleRow: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+
+  chatBubbleRowUsuario: {
+    justifyContent: "flex-end",
+  },
+
+  chatBubbleRowAsistente: {
+    justifyContent: "flex-start",
+  },
+
+  chatBubble: {
+    maxWidth: "80%",
+    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+
+  chatBubbleUsuario: {
+    backgroundColor: colors.primary,
+    borderBottomRightRadius: 4,
+  },
+
+  chatBubbleAsistente: {
+    backgroundColor: colors.white,
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...sombraTenue,
+  },
+
+  chatBubbleTextUsuario: {
+    color: colors.white,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  chatBubbleTextAsistente: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  chatInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.white,
+    borderRadius: 26,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...sombraSuave,
+  },
+
+  chatInput: {
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 14,
+    color: colors.text,
+  },
+
+  chatSendButton: {
+    backgroundColor: colors.primary,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  chatSendButtonDisabled: {
+    backgroundColor: colors.muted,
+  },
+
+  chatSendButtonText: {
+    color: colors.white,
+    fontSize: 18,
   },
 
   // Dashboard: próxima vacuna
@@ -371,7 +557,9 @@ export const globalStyles = StyleSheet.create({
     padding: 15,
     borderRadius: 18,
     marginBottom: 12,
-    ...sombraTenue,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...sombraSuave,
   },
 
   moduleIconBox: {
@@ -384,8 +572,9 @@ export const globalStyles = StyleSheet.create({
     marginRight: 12,
   },
 
-  // Variantes de color para diferenciar módulos de un vistazo (mismo tamaño,
-  // solo cambia el tinte de fondo — reutiliza los colores ya definidos).
+  // estas son variantes de color para distinguir los módulos de un
+  // vistazo, mismo tamaño, solo le cambio el color de fondo usando los
+  // colores que ya tenía definidos arriba
   moduleIconBoxWarning: {
     backgroundColor: colors.yellow,
   },
@@ -655,12 +844,15 @@ export const globalStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.primaryLight,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 14,
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: colors.primaryLight,
   },
 
   optionActive: {
     backgroundColor: colors.primary,
+    borderColor: colors.primaryDark,
   },
 
   optionText: {
@@ -749,6 +941,19 @@ export const globalStyles = StyleSheet.create({
     padding: 24,
   },
 
+  // esta franja de color va decorativa detrás de la tarjeta de login,
+  // le da más onda de "producto real" en vez de dejar el fondo plano
+  loginTopBand: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 220,
+    backgroundColor: colors.primary,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
+  },
+
   loginCard: {
     backgroundColor: colors.white,
     borderRadius: 26,
@@ -762,12 +967,36 @@ export const globalStyles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  loginLogoImage: {
-    width: 92,
-    height: 92,
-    borderRadius: 22,
+  // esta insignia circular blanca enmarca el logo, queda como un "avatar"
+  // flotando sobre la franja de color de arriba
+  loginLogoBadge: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.white,
     alignSelf: "center",
-    marginBottom: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+    ...sombraSuave,
+  },
+
+  loginLogoImage: {
+    width: 66,
+    height: 66,
+    borderRadius: 16,
+  },
+
+  // este texto chiquito en mayúsculas arriba del título es el típico
+  // "eyebrow" que usan las apps profesionales antes del título grande
+  loginEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.5,
+    textAlign: "center",
+    textTransform: "uppercase",
+    color: colors.accent,
+    marginBottom: 4,
   },
 
   passwordHint: {
@@ -823,10 +1052,10 @@ export const globalStyles = StyleSheet.create({
 
   loginButton: {
     backgroundColor: colors.primary,
-    padding: 16,
+    padding: 17,
     borderRadius: 16,
     marginTop: 8,
-    ...sombraTenue,
+    ...sombraSuave,
   },
 
   loginButtonText: {
@@ -834,6 +1063,7 @@ export const globalStyles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "900",
     fontSize: 16,
+    letterSpacing: 0.4,
   },
 
   footer: {
@@ -1120,10 +1350,20 @@ export const globalStyles = StyleSheet.create({
   // MODAL: selector de cuenta / bebé
   // ==========================
 
+  // ya no uso el <Modal> de React Native para esto: en la versión web se
+  // me juntó con un bug feo donde los botones de adentro no respondían al
+  // toque/click (problema conocido de react-native-web con Modal). Ahora
+  // esta View se pone directo encima de todo con position absolute, así
+  // funciona igual en celular y en la versión web.
   modalOverlay: {
-    flex: 1,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: "rgba(0, 108, 50, 0.35)",
     justifyContent: "flex-end",
+    zIndex: 999,
   },
 
   modalSheet: {

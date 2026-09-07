@@ -1,17 +1,18 @@
 rules_version = '2';
 
-// Reglas de seguridad de Firestore para PediatriTrack Global.
+// Estas son mis reglas de seguridad de Firestore para PediatriTrack Global.
 // Cada documento guarda el campo "uid" del usuario que lo creó.
-// Solo el dueño autenticado puede leer, actualizar o eliminar su propio
-// documento, y solo puede crear documentos marcados con su propio uid.
+// Solo el dueño autenticado puede leer, actualizar o borrar su propio
+// documento, y solo puede crear documentos con su propio uid.
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Un update solo se permite si YA eras el dueño y el documento SIGUE
-    // perteneciéndote después del cambio (el campo "uid" no se puede
-    // reasignar a otra cuenta). Esto evita que alguien "regale" o reasigne
-    // sus propios documentos al uid de otra persona.
+    // esta función la hice para que un update solo se permita si YA eras
+    // el dueño del documento y sigues siendo el dueño después del cambio
+    // (o sea que el campo "uid" no se puede reasignar a otra cuenta).
+    // Así nadie puede "regalar" o pasar sus documentos al uid de otra
+    // persona con un update.
     function esActualizacionSinCambioDeDueno() {
       return request.auth != null
         && request.auth.uid == resource.data.uid
@@ -58,7 +59,7 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.uid;
     }
 
-    // Cualquier otra colección queda bloqueada por defecto.
+    // cualquier otra colección que no esté arriba queda bloqueada por default
     match /{document=**} {
       allow read, write: if false;
     }

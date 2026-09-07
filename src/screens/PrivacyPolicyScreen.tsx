@@ -13,7 +13,7 @@ export default function PrivacyPolicyScreen({ onGo }: Props) {
         style={globalStyles.container}
         showsVerticalScrollIndicator={false}
       >
-        {/* Encabezado */}
+        {/* encabezado */}
         <View style={globalStyles.headerCard}>
           <Text style={globalStyles.title}>🔒 Política de Privacidad</Text>
 
@@ -24,7 +24,7 @@ export default function PrivacyPolicyScreen({ onGo }: Props) {
           </Text>
         </View>
 
-        {/* Datos que recopilamos */}
+        {/* datos que recopilamos */}
         <Text style={globalStyles.sectionTitle}>
           📋 Datos que recopilamos
         </Text>
@@ -45,7 +45,7 @@ export default function PrivacyPolicyScreen({ onGo }: Props) {
           </Text>
         </View>
 
-        {/* Cómo usamos los datos */}
+        {/* cómo usamos los datos */}
         <Text style={globalStyles.sectionTitle}>
           ⚙️ Cómo usamos tus datos
         </Text>
@@ -67,7 +67,7 @@ export default function PrivacyPolicyScreen({ onGo }: Props) {
           </Text>
         </View>
 
-        {/* Dónde se almacenan */}
+        {/* dónde se guardan los datos */}
         <Text style={globalStyles.sectionTitle}>
           ☁️ Dónde se almacenan tus datos
         </Text>
@@ -87,7 +87,7 @@ export default function PrivacyPolicyScreen({ onGo }: Props) {
           </Text>
         </View>
 
-        {/* Seguridad */}
+        {/* seguridad */}
         <Text style={globalStyles.sectionTitle}>
           🛡️ Cómo protegemos tu información
         </Text>
@@ -108,7 +108,7 @@ export default function PrivacyPolicyScreen({ onGo }: Props) {
           </Text>
         </View>
 
-        {/* Menores de edad */}
+        {/* menores de edad */}
         <Text style={globalStyles.sectionTitle}>
           👶 Datos de menores de edad
         </Text>
@@ -127,7 +127,7 @@ export default function PrivacyPolicyScreen({ onGo }: Props) {
           </Text>
         </View>
 
-        {/* Derechos del usuario */}
+        {/* derechos del usuario */}
         <Text style={globalStyles.sectionTitle}>
           ✅ Tus derechos
         </Text>
@@ -147,7 +147,7 @@ export default function PrivacyPolicyScreen({ onGo }: Props) {
           </Text>
         </View>
 
-        {/* Contacto */}
+        {/* contacto */}
         <Text style={globalStyles.sectionTitle}>
           ✉️ Contacto
         </Text>

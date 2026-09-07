@@ -13,7 +13,7 @@ export default function InfoScreen({ onGo }: Props) {
         style={globalStyles.container}
         showsVerticalScrollIndicator={false}
       >
-        {/* Encabezado */}
+        {/* encabezado */}
         <View style={globalStyles.headerCard}>
           <Text style={globalStyles.title}>
             ℹ️ Información Pediátrica

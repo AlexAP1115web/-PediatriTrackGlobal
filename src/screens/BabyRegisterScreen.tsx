@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Alert,
   ScrollView,
   Text,
   TextInput,
@@ -10,12 +9,17 @@ import {
 
 import { guardarBebeFirebase } from "../firebase/firebaseService";
 import { globalStyles } from "../styles/globalStyles";
+import { Alert } from "../utils/alerta";
 
 type Props = {
   onGo: (screen: string) => void;
 };
 
+const PARENTESCOS = ["Mamá", "Papá", "Tutor(a)", "Abuelo(a)", "Otro"] as const;
+
 export default function BabyRegisterScreen({ onGo }: Props) {
+  const [nombreTutor, setNombreTutor] = useState("");
+  const [parentesco, setParentesco] = useState<string>(PARENTESCOS[0]);
   const [nombre, setNombre] = useState("");
   const [fechaNacimiento, setFechaNacimiento] = useState("");
   const [sexo, setSexo] = useState("");
@@ -47,6 +51,8 @@ export default function BabyRegisterScreen({ onGo }: Props) {
         alergiasAlimentarias:
           alergiasAlimentarias.trim() || "Ninguna",
         condiciones: condiciones.trim() || "Ninguna",
+        nombreTutor: nombreTutor.trim() || "",
+        parentesco: parentesco || "",
       });
 
       Alert.alert(
@@ -71,7 +77,7 @@ export default function BabyRegisterScreen({ onGo }: Props) {
         style={globalStyles.container}
         showsVerticalScrollIndicator={false}
       >
-        {/* Encabezado principal */}
+        {/* encabezado principal */}
         <View style={globalStyles.headerCard}>
           <Text style={globalStyles.title}>
             👶 Registro del Bebé
@@ -84,7 +90,7 @@ export default function BabyRegisterScreen({ onGo }: Props) {
           </Text>
         </View>
 
-        {/* Resumen de secciones */}
+        {/* resumen rápido de las secciones */}
         <View style={globalStyles.summaryRow}>
           <View style={globalStyles.summaryCard}>
             <Text style={globalStyles.summaryNumber}>💉</Text>
@@ -108,8 +114,50 @@ export default function BabyRegisterScreen({ onGo }: Props) {
           </View>
         </View>
 
-        {/* Formulario principal */}
+        {/* formulario principal */}
         <View style={globalStyles.formCard}>
+          <Text style={globalStyles.sectionTitle}>
+            Perfil del tutor o padre
+          </Text>
+
+          <Text style={globalStyles.label}>
+            Tu nombre (para personalizar tu bienvenida)
+          </Text>
+
+          <TextInput
+            placeholder="Ej. Alejandra Torres"
+            placeholderTextColor="#90A4AE"
+            value={nombreTutor}
+            onChangeText={setNombreTutor}
+            style={globalStyles.input}
+          />
+
+          <Text style={globalStyles.label}>
+            Parentesco con el bebé
+          </Text>
+
+          <View style={globalStyles.chipRow}>
+            {PARENTESCOS.map((opcion) => (
+              <TouchableOpacity
+                key={opcion}
+                style={[
+                  globalStyles.chipButton,
+                  parentesco === opcion && globalStyles.chipButtonActive,
+                ]}
+                onPress={() => setParentesco(opcion)}
+              >
+                <Text
+                  style={[
+                    globalStyles.chipText,
+                    parentesco === opcion && globalStyles.chipTextActive,
+                  ]}
+                >
+                  {opcion}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
           <Text style={globalStyles.sectionTitle}>
             Información general
           </Text>
@@ -235,7 +283,7 @@ export default function BabyRegisterScreen({ onGo }: Props) {
           </TouchableOpacity>
         </View>
 
-        {/* Aviso profesional */}
+        {/* aviso de cómo se usa la info */}
         <View style={globalStyles.helpCard}>
           <Text style={globalStyles.helpTitle}>
             ℹ️ Uso de la información

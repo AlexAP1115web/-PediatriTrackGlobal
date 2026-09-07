@@ -15,6 +15,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
+// esto lo puse para que los correos automáticos de Firebase (recuperar
+// contraseña, verificar correo) me lleguen en español y no en inglés
+auth.languageCode = "es";
+
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 

@@ -1,13 +1,15 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 import { auth } from "../firebase/firebaseConfig";
+import { Alert } from "../utils/alerta";
 import {
   cerrarSesionFirebase,
   obtenerUltimoBebeFirebase,
 } from "../firebase/firebaseService";
 import BabyRegisterScreen from "../screens/BabyRegisterScreen";
+import ChatbotScreen from "../screens/ChatbotScreen";
 import DocumentsScreen from "../screens/DocumentsScreen";
 import FoodScreen from "../screens/FoodScreen";
 import InfoScreen from "../screens/InfoScreen";
@@ -25,11 +27,12 @@ type ScreenName =
   | "vitaminas"
   | "alimentacion"
   | "info"
-  | "privacidad";
+  | "privacidad"
+  | "chatbot";
 
-// Seguridad: tiempo máximo de sesión inactiva antes de cerrarla automáticamente.
+// tiempo máximo que dejo la sesión inactiva antes de cerrarla sola (por seguridad)
 const TIEMPO_MAXIMO_INACTIVIDAD_MS = 30 * 60 * 1000; // 30 minutos
-const INTERVALO_REVISION_MS = 30 * 1000; // revisa cada 30 segundos
+const INTERVALO_REVISION_MS = 30 * 1000; // reviso cada 30 segundos si ya se pasó
 
 export default function Index() {
   const [pantalla, setPantalla] = useState<ScreenName>("login");
@@ -56,9 +59,8 @@ export default function Index() {
     return cancelarSuscripcion;
   }, []);
 
-  // Seguridad: cierra la sesión automáticamente si el usuario autenticado
-  // pasa 30 minutos sin interactuar con la app (sin tocar la pantalla ni
-  // cambiar de módulo).
+  // este efecto cierra la sesión sola si el usuario ya autenticado se
+  // queda 30 minutos sin tocar la pantalla ni cambiar de módulo
   useEffect(() => {
     const intervalo = setInterval(async () => {
       if (!auth.currentUser) return;
@@ -111,7 +113,7 @@ export default function Index() {
             { alignItems: "center", justifyContent: "center" },
           ]}
         >
-          <ActivityIndicator size="large" color="#00843D" />
+          <ActivityIndicator size="large" color="#0EA5E9" />
           <Text style={[globalStyles.subtitle, { marginTop: 12 }]}>
             Verificando sesión...
           </Text>
@@ -151,12 +153,16 @@ export default function Index() {
       return <PrivacyPolicyScreen onGo={navegar} />;
     }
 
+    if (pantalla === "chatbot") {
+      return <ChatbotScreen onGo={navegar} />;
+    }
+
     return <LoginScreen onLogin={alIniciarSesion} />;
   };
 
-  // Envolver todo en una View que registra actividad al primer toque
-  // permite reiniciar el temporizador de inactividad (seguridad de sesión)
-  // sin tener que tocar cada pantalla individual.
+  // envolví todo en una View que registra actividad con cada toque, así
+  // reinicio el temporizador de inactividad sin tener que meterle el
+  // mismo código a cada pantalla por separado
   return (
     <View style={{ flex: 1 }} onTouchStart={registrarActividad}>
       {renderizarPantallaActual()}

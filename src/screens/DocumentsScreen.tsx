@@ -2,7 +2,6 @@ import * as DocumentPicker from "expo-document-picker";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   ScrollView,
   Share,
   Text,
@@ -22,6 +21,7 @@ import {
   subirArchivoStorage,
 } from "../firebase/firebaseService";
 import { globalStyles } from "../styles/globalStyles";
+import { Alert } from "../utils/alerta";
 
 type Props = {
   onGo: (screen: string) => void;

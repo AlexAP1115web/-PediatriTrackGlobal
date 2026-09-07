@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Alert,
   ScrollView,
   Text,
   TextInput,
@@ -17,7 +16,12 @@ import {
   registrarTomaVitaminaFirebase,
   VitaminaFirebase,
 } from "../firebase/firebaseService";
+import {
+  buscarInfoMedicamentoOpenFDA,
+  buscarInfoMedicamentoRxNorm,
+} from "../services/apisExternas";
 import { globalStyles } from "../styles/globalStyles";
+import { Alert } from "../utils/alerta";
 
 type Props = {
   onGo: (screen: string) => void;
@@ -30,7 +34,7 @@ type EstadoRecordatorio =
   | "Según indicación médica";
 
 // ==========================
-// Utilidades de fecha y recordatorios
+// funciones de apoyo para fechas y recordatorios
 // ==========================
 
 function formatearFechaHoy(): string {
@@ -108,6 +112,7 @@ export default function VitaminsScreen({ onGo }: Props) {
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [procesandoId, setProcesandoId] = useState<string | null>(null);
+  const [consultandoId, setConsultandoId] = useState<string | null>(null);
 
   useEffect(() => {
     cargarVitaminas();
@@ -211,6 +216,60 @@ export default function VitaminsScreen({ onGo }: Props) {
       Alert.alert("Error", "No se pudo registrar la toma de hoy.");
     } finally {
       setProcesandoId(null);
+    }
+  };
+
+  // aquí consulto openFDA y RxNorm (son públicas, no piden llave) para
+  // mostrar info oficial del nombre que se registró. Esto no sustituye
+  // la indicación médica, si ninguna API encuentra nada nada más aviso
+  // y dejo seguir usando el panel normal
+  const consultarInformacionOficial = async (vitamina: VitaminaFirebase) => {
+    if (!vitamina.id) return;
+
+    setConsultandoId(vitamina.id);
+
+    try {
+      const [infoFDA, infoRxNorm] = await Promise.all([
+        buscarInfoMedicamentoOpenFDA(vitamina.nombre),
+        buscarInfoMedicamentoRxNorm(vitamina.nombre),
+      ]);
+
+      if (!infoFDA && !infoRxNorm) {
+        Alert.alert(
+          "Sin resultados",
+          `No se encontró "${vitamina.nombre}" en las bases oficiales de openFDA ni RxNorm. Puede ser un nombre comercial local o estar escrito de forma distinta.`
+        );
+        return;
+      }
+
+      const partes: string[] = [];
+
+      if (infoRxNorm) {
+        partes.push(`Nombre normalizado (RxNorm): ${infoRxNorm.nombreNormalizado}`);
+      }
+
+      if (infoFDA) {
+        partes.push(`Fuente: FDA — ${infoFDA.nombreEncontrado}`);
+        if (infoFDA.indicaciones) {
+          partes.push(`\nIndicaciones:\n${infoFDA.indicaciones}`);
+        }
+        if (infoFDA.dosisYAdministracion) {
+          partes.push(`\nDosis y administración:\n${infoFDA.dosisYAdministracion}`);
+        }
+        if (infoFDA.advertencias) {
+          partes.push(`\nAdvertencias:\n${infoFDA.advertencias}`);
+        }
+      }
+
+      Alert.alert(`Información oficial: ${vitamina.nombre}`, partes.join("\n"));
+    } catch (error) {
+      console.log("Error al consultar información oficial:", error);
+      Alert.alert(
+        "Error de conexión",
+        "No se pudo consultar la información oficial en este momento."
+      );
+    } finally {
+      setConsultandoId(null);
     }
   };
 
@@ -516,6 +575,20 @@ export default function VitaminsScreen({ onGo }: Props) {
                 >
                   <Text style={globalStyles.applyButtonText}>
                     {enProceso ? "Guardando..." : "Registrar toma de hoy"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={globalStyles.documentActions}>
+                <TouchableOpacity
+                  style={globalStyles.viewButton}
+                  disabled={consultandoId === item.id}
+                  onPress={() => consultarInformacionOficial(item)}
+                >
+                  <Text style={globalStyles.viewButtonText}>
+                    {consultandoId === item.id
+                      ? "Consultando..."
+                      : "🔎 Info oficial (FDA/RxNorm)"}
                   </Text>
                 </TouchableOpacity>
               </View>

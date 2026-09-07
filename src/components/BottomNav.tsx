@@ -11,12 +11,20 @@ export default function BottomNav({
   active,
 }: Props) {
   return (
-    <View style={globalStyles.bottomNav}>
+    <View
+      style={globalStyles.bottomNav}
+      accessibilityRole="tablist"
+      accessibilityLabel="Navegación principal"
+    >
 
       {/* Vacunas */}
       <TouchableOpacity
         style={globalStyles.bottomNavItem}
         onPress={() => onGo("dashboard")}
+        accessibilityRole="tab"
+        accessibilityLabel="Vacunas"
+        accessibilityHint="Ir al panel de vacunación"
+        accessibilityState={{ selected: active === "dashboard" }}
       >
         <View
           style={[
@@ -50,6 +58,10 @@ export default function BottomNav({
       <TouchableOpacity
         style={globalStyles.bottomNavItem}
         onPress={() => onGo("vitaminas")}
+        accessibilityRole="tab"
+        accessibilityLabel="Vitaminas"
+        accessibilityHint="Ir al panel de vitaminación"
+        accessibilityState={{ selected: active === "vitaminas" }}
       >
         <View
           style={[
@@ -83,6 +95,10 @@ export default function BottomNav({
       <TouchableOpacity
         style={globalStyles.bottomNavItem}
         onPress={() => onGo("documentos")}
+        accessibilityRole="tab"
+        accessibilityLabel="Documentos"
+        accessibilityHint="Ir al panel de documentos médicos"
+        accessibilityState={{ selected: active === "documentos" }}
       >
         <View
           style={[
@@ -116,6 +132,10 @@ export default function BottomNav({
       <TouchableOpacity
         style={globalStyles.bottomNavItem}
         onPress={() => onGo("alimentacion")}
+        accessibilityRole="tab"
+        accessibilityLabel="Alimentación"
+        accessibilityHint="Ir al panel de alimentación complementaria"
+        accessibilityState={{ selected: active === "alimentacion" }}
       >
         <View
           style={[
@@ -149,6 +169,10 @@ export default function BottomNav({
       <TouchableOpacity
         style={globalStyles.bottomNavItem}
         onPress={() => onGo("info")}
+        accessibilityRole="tab"
+        accessibilityLabel="Información"
+        accessibilityHint="Ir al panel de información pediátrica"
+        accessibilityState={{ selected: active === "info" }}
       >
         <View
           style={[

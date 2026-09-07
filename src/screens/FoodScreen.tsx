@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Alert,
   ScrollView,
   Text,
   TextInput,
@@ -16,6 +15,7 @@ import {
   obtenerUltimoBebeFirebase,
 } from "../firebase/firebaseService";
 import { globalStyles } from "../styles/globalStyles";
+import { Alert } from "../utils/alerta";
 
 type Props = {
   onGo: (screen: string) => void;
